@@ -1,0 +1,7 @@
+{
+	"FileVersion": 1,
+	"SupportedTargetPlatforms": [
+		"Win32",
+		"Win64"
+	]
+}
