@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "OnlineSubsystem.h"
 #include "DemoGameInstance.generated.h"
 
 /**
@@ -15,7 +16,9 @@ class GAMEDEVWEEKENDDEMO_API UDemoGameInstance : public UGameInstance
 	GENERATED_BODY()
 	
 public:
-    virtual void Shutdown() override;
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FLogEvent, const FString, Message);
+
+	virtual void Shutdown() override;
 	virtual void Init() override;
 
 public:
@@ -41,4 +44,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game Dev Weekened Demo",
 		DisplayName = "OSS Platform Login Demo")
 	void OSSPlatformLoginDemo();
+
+	UPROPERTY(BlueprintAssignable)
+	FLogEvent LogEventDelegate;
+
+private:
+	IOnlineSubsystem* OSS_Default;
+	IOnlineSubsystem* OSS_Native;
+
+	void OnLoginComplete(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error);
 };

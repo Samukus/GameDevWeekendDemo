@@ -3,18 +3,31 @@
 
 #include "DemoGameInstance.h"
 #include "UObject/Class.h"
-#include "OnlineSubsystem.h"
 #include "Interfaces/OnlineIdentityInterface.h"
 #include "ConfigDemonstration.h"
 
-void UDemoGameInstance::Init()
-{
-    Super::Init();
+void UDemoGameInstance::Init() {
+  Super::Init();
+
+  OSS_Native = IOnlineSubsystem::GetByPlatform();
+  OSS_Default = IOnlineSubsystem::Get();
+
+  if (OSS_Default)
+  {
+    OSS_Default->GetIdentityInterface()->AddOnLoginCompleteDelegate_Handle(0, FOnLoginCompleteDelegate::CreateUObject(this, &UDemoGameInstance::OnLoginComplete));
+  }
 }
 
 void UDemoGameInstance::Shutdown()
 {
     Super::Shutdown();
+}
+
+void UDemoGameInstance::OnLoginComplete(int32 LocalUserNum, bool bWasSuccessful,
+                     const FUniqueNetId& UserId, const FString& Error)
+{
+    LogEventDelegate.Broadcast(FString::Format(TEXT("Autologin[{0}]: {1}, {2}\n"),
+        {UserId.ToString(), bWasSuccessful ? TEXT("Succesfull") : TEXT("Error"), Error}));
 }
 
 // Config Demo
@@ -30,7 +43,6 @@ FString UDemoGameInstance::GetDefaultConfigProperty()
 
 // OSS by config Demo
 FString UDemoGameInstance::GetNativeOSSServiceName() {
-    IOnlineSubsystem* OSS_Native = IOnlineSubsystem::GetByPlatform();
     if (OSS_Native)
     {
         return OSS_Native->GetOnlineServiceName().ToString();
@@ -39,7 +51,6 @@ FString UDemoGameInstance::GetNativeOSSServiceName() {
 }
 
 FString UDemoGameInstance::GetDefaultOSSServiceName() {
-    IOnlineSubsystem* OSS_Default = IOnlineSubsystem::Get();
     if (OSS_Default) {
         return OSS_Default->GetOnlineServiceName().ToString();
     }
@@ -49,7 +60,6 @@ FString UDemoGameInstance::GetDefaultOSSServiceName() {
 // OSS identity inheritance demo
 void UDemoGameInstance::OSSPlatformLoginDemo()
 {
-    IOnlineSubsystem* OSS_Default = IOnlineSubsystem::Get();
     if (OSS_Default) {
         OSS_Default->GetIdentityInterface()->AutoLogin(0);
     }
